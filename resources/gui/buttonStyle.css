@@ -1,0 +1,89 @@
+.blueButton {
+    -fx-background-color: #3498db; /* 按钮背景色 */
+    -fx-text-fill: white; /* 文字颜色 */
+    -fx-font-size: 16px; /* 字体大小 */
+    -fx-font-weight: bold; /* 字体加粗 */
+    -fx-padding: 10px 20px; /* 按钮内边距 */
+    -fx-border-radius: 5px; /* 圆角 */
+    -fx-background-radius: 5px; /* 背景圆角 */
+    -fx-border-color: #2980b9; /* 边框颜色 */
+    -fx-border-width: 2px; /* 边框宽度 */
+}
+
+.blueButton:hover {
+    -fx-background-color: #2980b9; /* 悬停时的背景色 */
+    -fx-border-color: #1c598f; /* 悬停时的边框颜色 */
+}
+
+.gradient-button {
+    -fx-background-color: linear-gradient(#ff7f50, #ff6347);
+    -fx-background-radius: 30;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.6), 10, 0, 0, 0);
+}
+
+.gradient-button:hover {
+    -fx-background-color: linear-gradient(#ff6347, #ff4500);
+}
+
+.glass-button {
+    -fx-background-color: rgba(255, 255, 255, 0.3);
+    -fx-border-color: rgba(255, 255, 255, 0.8);
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 8 16;
+    -fx-cursor: hand;
+    -fx-effect: innershadow(gaussian, rgba(255, 255, 255, 0.8), 10, 0, 0, 0);
+}
+
+.glass-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.5);
+    -fx-border-color: rgba(255, 255, 255, 1);
+}
+
+.three-d-button {
+    -fx-background-color: #3c8dbc;
+    -fx-border-color: #2c6e91;
+    -fx-border-width: 2;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.8), 5, 0, 4, 4);
+}
+
+.three-d-button:pressed {
+    -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.8), 5, 0, 4, 4);
+    -fx-translate-y: 2;
+}
+
+.orange-button {
+    -fx-background-color: #FF9800; /* 明亮的橙色背景，使按钮更加突出 */
+    -fx-text-fill: white; /* 白色字体，清晰对比 */
+    -fx-font-size: 16px; /* 合适的字体大小 */
+    -fx-font-weight: bold; /* 字体加粗 */
+    -fx-padding: 10px 20px; /* 较大的内边距，使按钮更大 */
+    -fx-border-radius: 20px; /* 圆角按钮，柔和感 */
+    -fx-background-radius: 20px; /* 圆角背景，与边框一致 */
+    -fx-border-color: #E65100; /* 较深的橙色边框，增加层次感 */
+    -fx-border-width: 2px; /* 边框厚度 */
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0.5, 0, 4); /* 阴影效果，增加立体感 */
+}
+
+.orange-button:hover {
+    -fx-background-color: #F57C00; /* 悬停时背景颜色稍微变亮 */
+    -fx-cursor: hand; /* 悬停时显示手形光标 */
+}
+
+.orange-button:pressed {
+    -fx-background-color: #E65100; /* 按下时背景颜色变深 */
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0.5, 0, 2); /* 按下时阴影缩小 */
+}
+

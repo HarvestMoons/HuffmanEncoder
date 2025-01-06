@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Button?>
+<GridPane fx:controller="com.huffman.gui.controller.RedeemController"
+          xmlns:fx="http://javafx.com/fxml/1"
+          alignment="center"
+          hgap="10"
+          vgap="5"
+          stylesheets="@buttonStyle.css, @backgroundStyle.css,@labelStyle.css"
+          styleClass="redeem-background">
+    <Label text="请输入兑换码:" styleClass="custom-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+    <TextField fx:id="redeemCodeField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+    <Button text="确认"  fx:id="confirmButton" styleClass="three-d-button" onAction="#handleConfirm" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+    <Button text="取消"  fx:id="cancelButton" styleClass="three-d-button" onAction="#handleCancel" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+</GridPane>

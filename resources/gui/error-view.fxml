@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.huffman.gui.controller.ErrorController"
+      spacing="30" alignment="CENTER"
+      stylesheets="@backgroundStyle.css, @buttonStyle.css,@labelStyle.css"
+      styleClass="error-background">
+    <Label fx:id="errorLabel" styleClass="error-message-label" wrapText="true" maxWidth="400" alignment="CENTER"/>
+    <Button text="我知道了" styleClass="glass-button" onAction="#handleOkButtonClick"/>
+</VBox>
+

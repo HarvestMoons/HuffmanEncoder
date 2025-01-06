@@ -5,37 +5,48 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 public class BitInputStream {
-	
-	private final BufferedInputStream bis;
-	/** 当前字节*/
-	private int currentByte;
-	/**当前字节中剩余未读的比特位数*/
-	private int numBitsFilled;
 
-	public BitInputStream(FileInputStream fis) {
-		bis=new BufferedInputStream(fis);
-		currentByte = 0;
-		numBitsFilled = 0;
-	}
+    private final BufferedInputStream bis;
+    /**
+     * 当前字节
+     */
+    private int currentByte;
+    /**
+     * 当前字节中剩余未读的比特位数
+     */
+    private int numBitsFilled;
 
-	public int readBit() throws IOException {
-		if (numBitsFilled == 0) {
-			currentByte = bis.read();
-			//System.out.println( "currentByte read:"+currentByte);
-			if (currentByte == -1) {
-				return -1;
-			}
-			numBitsFilled = 8;
-		}
+    public BitInputStream(FileInputStream fis) {
+        bis = new BufferedInputStream(fis);
+        currentByte = 0;
+        numBitsFilled = 0;
+    }
 
-		int bit = ((currentByte >> (numBitsFilled - 1)) & 1);
-		numBitsFilled--;
-		return bit;
-	}
+    public int readBit() throws IOException {
+        if (numBitsFilled == 0) {
+            currentByte = bis.read();
+            if (currentByte == -1) {
+                return -1;
+            }
+            numBitsFilled = 8;
+        }
 
-	public void clear() {
-		numBitsFilled = 0;
-		currentByte = 0;
-	}
+        int bit = ((currentByte >> (numBitsFilled - 1)) & 1);
+        numBitsFilled--;
+        return bit;
+    }
+
+    public void clear() {
+        numBitsFilled = 0;
+        currentByte = 0;
+    }
+
+    public void close() {
+        try {
+            bis.close();
+        } catch (IOException e) {
+            System.out.println("Error closing BitInputStream");
+        }
+    }
 
 }

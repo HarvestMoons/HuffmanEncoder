@@ -1,5 +1,7 @@
 package com.huffman.bitstream;
 
+import com.huffman.userIO.OutputManager;
+
 import java.io.*;
 
 public class BitOutputStream implements AutoCloseable {
@@ -24,7 +26,7 @@ public class BitOutputStream implements AutoCloseable {
 			try {
 				writeBit(bit == '1');
 			} catch (IOException e) {
-				System.err.println(e.getMessage());
+				OutputManager.showErrorMsg(e.getMessage());
 			}
 		}
 	}

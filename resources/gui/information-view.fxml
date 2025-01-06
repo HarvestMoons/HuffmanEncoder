@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.huffman.gui.controller.InformationController"
+      spacing="10" alignment="CENTER"
+      stylesheets="@backgroundStyle.css, @buttonStyle.css,@labelStyle.css"
+      styleClass="info-background">
+    <Label fx:id="infoLabel" styleClass="info-label" wrapText="true" maxWidth="400"/>
+    <Button text="我知道了" onAction="#handleClose" />
+</VBox>
+

@@ -1,0 +1,27 @@
+.custom-label {
+    -fx-text-fill: #420b2a;
+    -fx-font-family:'STHeiti Light' ;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold; /* 设置字体加粗 */
+}
+.error-message-label{
+    -fx-text-fill: #00ffe1;
+    -fx-font-family:'KaiTi';
+    -fx-font-size: 24px;
+}
+
+.info-label {
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+}
+
+.success-label {
+    -fx-text-fill: #FF9800; /* 柔和的橙色，与图片中的颜色相呼应 */
+    -fx-font-family: '微软雅黑', 'PingFang SC', 'Heiti SC', 'Source Han Sans', sans-serif;
+    -fx-font-size: 20px; /* 稍大一点的字体以确保汉字的可读性 */
+    -fx-alignment: center; /* 文字居中对齐 */
+    -fx-padding: 20px; /* 给文字增加内边距，避免与框架或花朵过于靠近 */
+    /*-fx-background-color: rgba(255, 255, 255, 0.8); /* 半透明背景，确保文字清晰可见 */
+    -fx-background-radius: 12px; /* 圆角边框，增添柔和感 */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 8, 0.0, 0, 4); /* 使用 JavaFX 的 dropshadow 替代标准 box-shadow */
+}

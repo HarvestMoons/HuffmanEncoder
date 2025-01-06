@@ -8,16 +8,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.StreamCorruptedException;
-import java.util.Scanner;
-import java.util.regex.Pattern;
 
-import com.huffman.Main;
 import com.huffman.bitstream.BitInputStream;
 import com.huffman.compressed_data.HuffmanFileData;
 import com.huffman.helper.Constants;
 import com.huffman.helper.FileHelper;
 import com.huffman.helper.FolderHelper;
 import com.huffman.myexception.UnknownObjectTypeException;
+import com.huffman.userIO.OutputManager;
 import com.huffman.treenode.FolderTreeNode;
 import com.huffman.treenode.HuffmanTreeNode;
 
@@ -37,7 +35,7 @@ public class HuffmanDecode {
     /**
      * 读取的FolderTreeNode，准备解压缩文件夹
      */
-    private static FolderTreeNode folderTreeNode;
+    private static FolderTreeNode folderTreeRootNode;
     /**
      * 压缩文件中存储的哈夫曼编码树
      */
@@ -59,75 +57,84 @@ public class HuffmanDecode {
      */
     private static boolean isDecodingFolder;
 
-    // 私有构造函数，防止实例化
-    private HuffmanDecode() {
-        throw new UnsupportedOperationException("Utility class");
-    }
+    private static long totalSize;
+    private static long handledSize;
 
     public static void decode(String compressedFilePath) {
-
         HuffmanDecode.compressedFilePath = compressedFilePath;
         HuffmanDecode.parentFilePath = FileHelper.getParentDirectory(compressedFilePath);
         waitingForInputTime = 0;
         try (FileInputStream fis = new FileInputStream(compressedFilePath);
              ObjectInputStream inputStream = new ObjectInputStream(fis)) {
             bitInputStream = new BitInputStream(fis);
+            OutputManager.outputInConsoleModeOnly("开始读取压缩文件...");
             Object object = inputStream.readObject();
             // 解压普通文件
             // 注意，下面这种模式匹配（Pattern Matching）功能是java16引入的
             if (object instanceof HuffmanFileData huffmanFileData) {
                 isDecodingFolder = false;
                 decodeHFileData = huffmanFileData;
-                decodeFile(compressedFilePath);
+                decodeFile();
             }
             // 解压文件夹
             // 注意，下面这种模式匹配（Pattern Matching）功能是java16引入的
             else if (object instanceof FolderTreeNode fTreeNode) {
                 isDecodingFolder = true;
-                folderTreeNode = fTreeNode;
+                folderTreeRootNode = fTreeNode;
                 decodeFolder();
             } else {
                 throw new UnknownObjectTypeException("读取对象时出错: 文件中含有未知的类型");
             }
         } catch (FileNotFoundException e) {
-            System.err.println("文件未找到" + e.getMessage());
+            OutputManager.showErrorMsg("文件未找到" + e.getMessage());
         } catch (IOException | ClassNotFoundException e) {
             if (e instanceof StreamCorruptedException) {
-                System.err.println("解压缩过程已终止\n" + "文件: " + compressedFilePath + "不可用此程序解压!");
+                OutputManager.showErrorMsg("解压缩过程已终止\n" + "文件: " + compressedFilePath + "不可用此程序解压!");
             } else {
-                System.err.println("读取文件对象时发生错误：" + e.getMessage());
+                OutputManager.showErrorMsg("读取文件对象时发生错误：" + e.getMessage());
             }
         } catch (UnknownObjectTypeException e) {
-            System.err.println(e.getMessage());
+            OutputManager.showErrorMsg(e.getMessage());
+        } finally {
+            bitInputStream.close();
         }
 
     }
 
     private static void decodeFolder() {
         long startTime = System.currentTimeMillis();
+        calcTotalSize(folderTreeRootNode);
         File compressedFile = new File(compressedFilePath);
-        String decodeFilePath = compressedFile.getParentFile().getAbsolutePath() + "\\" + folderTreeNode.getFolder().getName();
+        String decodeRootFolderPath = compressedFile.getParentFile().getAbsolutePath() + "\\" + folderTreeRootNode.getFolderName();
         try {
-            if (isCoverFile(decodeFilePath)) {
-                FolderHelper.deleteDirectory(decodeFilePath);
-                createFolderStructure(folderTreeNode, compressedFile.getParentFile());
+            if (isCoverFile(decodeRootFolderPath)) {
+                //如果删除原文件夹的过程失败，直接退出
+                if (!FolderHelper.deleteDirectory(decodeRootFolderPath)) {
+                    return;
+                }
+                OutputManager.outputInConsoleModeOnly("开始解压缩：");
+                createFolderStructure(folderTreeRootNode, compressedFile.getParentFile());
+                OutputManager.outputInConsoleModeOnly("");
                 decodeMsgPrinter(startTime);
             }
-        } catch (IOException e1) {
-            System.err.println("解压文件夹出错：" + e1.getMessage());
+        } catch (IOException e) {
+            //todo:调整e位置
+            OutputManager.showErrorMsg("解压文件夹出错：" + e.getMessage());
             //如果以上解压文件夹的过程出错，应该删除被创建的根文件夹，这里不会误删除原有的根文件夹
-            FolderHelper.deleteDirectory(decodeFilePath);
+            FolderHelper.deleteDirectory(decodeRootFolderPath);
+        }finally {
+            totalSize = 0;
+            handledSize = 0;
         }
 
     }
 
     private static void createFolderStructure(FolderTreeNode node, File parentFolder) throws IOException {
         File currentFolder;
-        String folderName = node.getFolder().getName();
+        String folderName = node.getFolderName();
         currentFolder = new File(parentFolder, folderName);
         if (!currentFolder.mkdirs()) {
-            System.out.println("创建文件夹失败！文件夹名：" + folderName);
-            return;
+            throw new IOException("创建文件夹错误,文件夹路径：" + currentFolder.getAbsolutePath());
         }
         // 还原当前文件夹中的文件
         for (HuffmanFileData huffmanFileData : node.getCompressedFiles()) {
@@ -141,10 +148,14 @@ public class HuffmanDecode {
             //获取哈夫曼树
             huffmanTree = huffmanFileData.getHuffmanTree();
             //对于每一个不同的文件，创建不同的OutputStream
-            FileOutputStream fos = new FileOutputStream(decodeFilePath);
-            BufferedOutputStream bos = new BufferedOutputStream(fos);
-            //准备工作完成后，开始解压缩
-            writeCompressedDataToFile(bos, decodeHFileData.getTotalBytes());
+            //不及时关闭资源，则一次运行中无法连续覆盖
+            try (FileOutputStream fos = new FileOutputStream(decodeFilePath);
+                 BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+                //准备工作完成后，开始解压缩
+                writeCompressedDataToFile(bos, decodeHFileData.getTotalBytes());
+            }
+            handledSize+=huffmanFileData.getTotalBytes();
+            OutputManager.showProgress(handledSize, totalSize);
         }
         // 递归创建子文件夹
         for (FolderTreeNode child : node.getChildren()) {
@@ -152,8 +163,9 @@ public class HuffmanDecode {
         }
     }
 
-    private static void decodeFile(String decodeFilePath) throws IOException {
+    private static void decodeFile() throws IOException {
         long startTime = System.currentTimeMillis();
+        OutputManager.outputInConsoleModeOnly("开始解压缩...");
         // 若压缩文件为空，解压文件也为空
         if (isDecodingEmptyFile() && !isDecodingFolder) {
             decodeMsgPrinter(startTime);
@@ -161,24 +173,24 @@ public class HuffmanDecode {
         }
         huffmanTree = decodeHFileData.getHuffmanTree();
         // 获取用户指定的解压文件名
-        if (!isDecodingFolder) {
-            decodeFilePath = generateDecodeFilePath();
-        }
+        decodeFilePath = generateDecodeFilePath();
 
         // 用户不希望覆盖已有的解压缩文件，直接返回
         if (!isCoverFile(decodeFilePath)) {
             return;
         }
-        FileOutputStream fos = new FileOutputStream(decodeFilePath);
-        BufferedOutputStream bos = new BufferedOutputStream(fos);
-        writeCompressedDataToFile(bos, decodeHFileData.getTotalBytes());
+        try (FileOutputStream fos = new FileOutputStream(decodeFilePath);
+             BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+            writeCompressedDataToFile(bos, decodeHFileData.getTotalBytes());
+        }
+
 
         decodeMsgPrinter(startTime);
     }
 
     private static boolean isDecodingEmptyFile() {
         if (decodeHFileData.getTotalBytes() == 0) {
-            // 如果在解压单个文件，用户有命名自由
+            // 如果在解压单个空文件，用户有命名自由，对于文件夹中的空文件，不可以重命名
             if (!isDecodingFolder) {
                 decodeFilePath = generateDecodeFilePath();
             }
@@ -205,7 +217,7 @@ public class HuffmanDecode {
                 else if (bit == -1) {
                     break;
                 } else {
-                    System.err.println("错误的比特读入:" + bit);
+                    OutputManager.showErrorMsg("错误的比特读入:" + bit);
                 }
             }
             // 如果是叶节点，将对应的字节值存储到字节数组中
@@ -226,28 +238,20 @@ public class HuffmanDecode {
     private static void decodeMsgPrinter(long startTime) {
         long endTime = System.currentTimeMillis();
         long executionTime = endTime - startTime - waitingForInputTime;
-        System.out.println("----------------------------------------");
-        System.out.println("加密通话已破解");
-        System.out.println("解压缩时间: " + (double) executionTime / 1000 + " 秒");
-        System.out.println("----------------------------------------");
+        String decodeMsg = """              
+                加密通话已破解
+                解压缩时间: %.2f 秒
+                """.formatted((double) executionTime / 1000);
+        OutputManager.showSuccessMsg(decodeMsg);
     }
 
+    //todo:测试添加的GUI
     private static String generateDecodeFilePath() {
         long startTime = System.currentTimeMillis();
-        Scanner scanner = Main.SCANNER;
-        System.out.println("请输入解压缩文件名(输入\\d将以原文件名解压缩):");
-        String userInputString = scanner.nextLine();
         String decodeFileName;
-        String specialCharactersRegex = "[/\\\\\"?<>:*|]";
-        while (Pattern.compile(specialCharactersRegex).matcher(userInputString).find()) {
-            if ("\\d".equals(userInputString)) {
-                break;
-            }
-            System.out.println("不可使用特殊字符 | < > * : ? \\ / \" 为文件命名!请重新输入！");
-            userInputString = scanner.nextLine();
-        }
+        String userInputString=OutputManager.getDecodedString();
         //以默认解压缩名解压缩
-        if ("\\d".equals(userInputString)) {
+        if ("\\d".equals(userInputString)||userInputString==null) {
             String originalFileName = FileHelper.getFileNameWithExtension(decodeHFileData.getFileName());
             // 查找最后一个'.'的位置
             int lastDotIndex = originalFileName.lastIndexOf('.');
@@ -262,16 +266,17 @@ public class HuffmanDecode {
                 decodeFileName = namePart + Constants.DEFAULT_DECODE_NAME + extensionPart;
             }
         }
-        
+
         //自定义解压缩文件名
         else {
-            String originalExtension=FileHelper.getFileExtension(decodeHFileData.getFileName());
-            decodeFileName = userInputString+"."+originalExtension;
+            String originalExtension = FileHelper.getFileExtension(decodeHFileData.getFileName());
+            decodeFileName = userInputString + "." + originalExtension;
         }
         //父文件夹路径+解压后的文件（夹）名->解压文件（夹）路径
         decodeFilePath = parentFilePath + "\\" + decodeFileName;
         long endTime = System.currentTimeMillis();
         waitingForInputTime += endTime - startTime;
+        OutputManager.outputInConsoleModeOnly("已获取解压文件名，解压继续进行中...");
         return decodeFilePath;
     }
 
@@ -279,7 +284,7 @@ public class HuffmanDecode {
     private static boolean isCoverFile(String decodeFilePath) {
         long startTime2 = System.currentTimeMillis();
         if (!FileHelper.isCoverExistingFile(decodeFilePath)) {
-            System.out.println("解压缩过程已终止");
+            OutputManager.outputInConsoleModeOnly("解压缩过程已终止");
             return false;
         }
         waitingForInputTime += System.currentTimeMillis() - startTime2;
@@ -288,18 +293,28 @@ public class HuffmanDecode {
 
     public static FolderTreeNode getFolderTree(File file) {
         try {
-            folderTreeNode = FolderTreeNode.readFromFile(file.getAbsolutePath());
-            return folderTreeNode;
+            folderTreeRootNode = FolderTreeNode.readFromFile(file.getAbsolutePath());
+            return folderTreeRootNode;
         } catch (IOException | ClassNotFoundException e) {
             if (e instanceof StreamCorruptedException) {
-                System.err.println("预览过程已终止\n" + "文件: " + file.getAbsolutePath() + "不能使用此程序预览!");
+                OutputManager.showErrorMsg("预览过程已终止\n" + "该文件不能使用此程序预览!");
             } else {
-                System.err.println("读取文件对象时发生错误：" + e.getMessage());
+                OutputManager.showErrorMsg("读取文件对象时发生错误：" + e.getMessage());
             }
             return null;
         } catch (ClassCastException e) {
-            System.err.println("这不是一个文件夹的压缩文件，不可预览！");
+            OutputManager.showErrorMsg("这不是一个文件夹的压缩文件，不可预览！");
             return null;
+        }
+    }
+
+    //todo:move
+    private static void calcTotalSize(FolderTreeNode node){
+        for (HuffmanFileData huffmanFileData : node.getCompressedFiles()) {
+            totalSize+=huffmanFileData.getTotalBytes();
+        }
+        for (FolderTreeNode child : node.getChildren()) {
+            calcTotalSize(child);
         }
     }
 }

@@ -6,6 +6,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 
 import com.huffman.compressed_data.HuffmanFileData;
+import com.huffman.userIO.OutputManager;
 import com.huffman.treenode.FolderTreeNode;
 
 
@@ -47,7 +48,7 @@ public class FolderHelper {
         if (node == null) {
             return;
         }
-        System.out.println(getDepthIndent(depth) + node.getFolder().getName() + "（文件夹）");
+        System.out.println(getDepthIndent(depth) + node.getFolderName() + "（文件夹）");
         //打印该文件夹之下的所有子文件
         for (HuffmanFileData huffmanFileData : node.getCompressedFiles()) {
             System.out.println(getDepthIndent(depth + 1) + FileHelper.getFileNameWithExtension(huffmanFileData.getFileName()));
@@ -63,14 +64,17 @@ public class FolderHelper {
         return "--".repeat(Math.max(0, depth));
     }
 
-    //传入一个文件夹路径（字符串），如果对应的文件夹存在，删除它；否则直接返回
-    public static void deleteDirectory(String directoryPath) {
+    /**
+     * 传入一个文件夹路径（字符串），如果对应的文件夹存在，删除它；否则直接返回。返回值表示是否成功删除(文件不存在也算成功删除)。
+     */
+    public static boolean deleteDirectory(String directoryPath) {
         Path path = Paths.get(directoryPath);
         if (!Files.exists(path)) {
-            return;
+            return true;
         }
         try {
             Files.walkFileTree(path, new SimpleFileVisitor<>() {
+
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     Files.delete(file);
@@ -83,11 +87,23 @@ public class FolderHelper {
                     return FileVisitResult.CONTINUE;
                 }
             });
+            return true;
+        } catch (AccessDeniedException e) {
+            OutputManager.showErrorMsg("删除文件夹时出错：本程序没有足够权限删除原文件夹(" + directoryPath + ")，请尝试手动删除。");
+            return false;
         } catch (IOException e) {
-            System.err.println("删除文件夹时出错："+e.getMessage());
+            OutputManager.showErrorMsg("删除文件夹时出错：" + e.getMessage());
+            return false;
         }
-
     }
 
-
+    /**
+     * 计算并返回文件夹大小
+     */
+    public static long getFolderSize(Path folderPath) throws IOException {
+        return Files.walk(folderPath)
+                .filter(Files::isRegularFile)
+                .mapToLong(p -> p.toFile().length())
+                .sum();
+    }
 }

@@ -1,9 +1,6 @@
 package com.huffman;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Scanner;
 
 import com.huffman.helper.Constants;
@@ -13,12 +10,15 @@ import com.huffman.method.HuffmanDecode;
 import com.huffman.method.HuffmanEncode;
 import com.huffman.music.MusicPlayer;
 import com.huffman.myexception.UndefinedOpcodeException;
+import com.huffman.userIO.OutputManager;
 
 public class Main {
 
     public static final Scanner SCANNER = new Scanner(System.in);
+
     public static void main(String[] args) {
         System.setProperty("file.encoding", "UTF-8");
+        OutputManager.setOutputMode(Constants.CONSOLE_OUTPUT);
         try {
             boolean isContinue = true;
             while (isContinue) {
@@ -52,7 +52,6 @@ public class Main {
                         break;
                     case Constants.QUIT_OP:
                         //退出
-                        SCANNER.close();
                         isContinue = false;
                         break;
                     default:
@@ -61,6 +60,7 @@ public class Main {
             }
             //睡眠3s,此后程序退出
             Thread.sleep(3000);
+            SCANNER.close();
         } catch (UndefinedOpcodeException | InterruptedException e) {
             System.err.println(e.getMessage());
         }
@@ -107,25 +107,16 @@ public class Main {
             case Constants.CHECK_OP:
                 System.out.println("请输入待预览文件的绝对地址:");
                 break;
-            case Constants.QUIT_OP:
-            case Constants.SECRET_MUSIC_OP:
+            case Constants.QUIT_OP, Constants.SECRET_MUSIC_OP:
                 return null;
             default:
                 throw new UndefinedOpcodeException(operation);
         }
         String filePath = SCANNER.nextLine().replace("\"", "");
-        if(filePath.isEmpty()){
-            System.out.println("输入不能为空！");
-            return null;
+        if (FileHelper.isFilePathValid(filePath)) {
+            return filePath;
         }
-        Path path = Paths.get(filePath);
-        boolean isFileExists = Files.exists(path);
-        // 文件是否存在？
-        if (!isFileExists) {
-            System.out.println("操作失败，输入的文件地址下找不到对应的文件");
-            return null;
-        }
-        return filePath;
+        return null;
     }
 
 }

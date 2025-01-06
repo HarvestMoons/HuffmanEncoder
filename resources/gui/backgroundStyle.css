@@ -1,0 +1,56 @@
+
+.main-background {
+    -fx-background-image: url('/gui/pictures/Honey.png');
+    -fx-background-size: 100% 100%;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+}
+
+.help-background {
+    -fx-background-image: url('/gui/pictures/Peter.png');
+    -fx-background-size: 100% 100%;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+}
+
+.redeem-background {
+    -fx-background-image: url('/gui/pictures/Pokemon.png');
+    -fx-background-size: 100% 100%;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+}
+
+.address-background {
+    -fx-background-image: url('/gui/pictures/Retro.png');
+    -fx-background-size: 100% 100%;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+}
+
+.error-background {
+    -fx-background-image: url('/gui/pictures/Mistake.png');
+    -fx-background-size: 100% 100%;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+}
+
+.info-background {
+    -fx-background-image: url('/gui/pictures/Stars.png');
+    -fx-background-size: 100% 100%;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+}
+
+.success-background {
+    -fx-background-image: url('/gui/pictures/Success.png');
+    -fx-background-size: 100% 100%;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+}
+
+.overwrite-background {
+    -fx-background-image: url('/gui/pictures/ToughFlash.png');
+    -fx-background-size: 100% 100%;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+}

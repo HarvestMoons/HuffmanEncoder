@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER"
+      spacing="20"
+      xmlns="http://javafx.com/javafx/8"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.huffman.gui.controller.OverwriteController"
+      stylesheets="@buttonStyle.css, @backgroundStyle.css,@labelStyle.css"
+      styleClass="overwrite-background">
+
+    <Label fx:id="messageLabel" styleClass="custom-label" wrapText="true" maxWidth="400"/>
+
+    <HBox alignment="CENTER" spacing="20">
+        <Button text="是" styleClass="gradient-button" onAction="#handleYesAction"/>
+        <Button text="否" styleClass="gradient-button" onAction="#handleNoAction"/>
+    </HBox>
+
+</VBox>

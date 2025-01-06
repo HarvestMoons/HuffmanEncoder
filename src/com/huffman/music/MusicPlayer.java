@@ -1,6 +1,7 @@
 package com.huffman.music;
 
 import com.huffman.helper.Constants;
+import com.huffman.userIO.OutputManager;
 
 import javax.sound.sampled.*;
 import java.io.BufferedInputStream;
@@ -10,12 +11,12 @@ import java.util.Random;
 public class MusicPlayer {
     private static Clip audioClip;
     private static String musicName;
-    
-    private static String getRandomMusicPath(){
-        Random rand = new Random();
 
+    private static final Random RAND = new Random();
+
+    private static String getRandomMusicPath() {
         // Generate random integers
-        int randomInt =rand.nextInt(Constants.TOTAL_MUSIC_NUM);
+        int randomInt = RAND.nextInt(Constants.TOTAL_MUSIC_NUM);
 
         return switch (randomInt) {
             case 0 -> {
@@ -26,8 +27,8 @@ public class MusicPlayer {
                 musicName = "Never (1984)";
                 yield "Footloose Moving Pictures - Never (1984).wav";
             }
-            case 2->{
-                musicName="These Dreams (1986)";
+            case 2 -> {
+                musicName = "These Dreams (1986)";
                 yield "红心乐队  Heart - These Dreams 1986年单曲.wav";
             }
             default -> {
@@ -39,33 +40,34 @@ public class MusicPlayer {
     }
 
     public static void playMusic() {
-        String musicFile= getRandomMusicPath();
-        if(musicFile==null){
+        String musicFile = getRandomMusicPath();
+        if (musicFile == null) {
             return;
         }
-        try {
-            // 如果当前有音乐在播放，先停止当前音乐
-            if (audioClip != null && audioClip.isRunning()) {
-                audioClip.stop();
-                audioClip.close();
-            }
+        // 如果当前有音乐在播放，先停止当前音乐
+        if (audioClip != null && audioClip.isRunning()) {
+            audioClip.stop();
+            audioClip.close();
+        }
+        try (InputStream audioSrc = MusicPlayer.class.getResourceAsStream("/" + musicFile)) {
             // 从JAR包中的资源加载音频文件
-            InputStream audioSrc = MusicPlayer.class.getResourceAsStream("/" + musicFile);
             if (audioSrc == null) {
                 System.out.println("音频文件未找到");
                 return;
             }
             // 添加缓存
-            InputStream bufferedIn = new BufferedInputStream(audioSrc);
-            AudioInputStream audioStream = AudioSystem.getAudioInputStream(bufferedIn);
-            AudioFormat format = audioStream.getFormat();
-            DataLine.Info info = new DataLine.Info(Clip.class, format);
-            audioClip = (Clip) AudioSystem.getLine(info);
-            audioClip.open(audioStream);
-            System.out.println("正在播放："+musicName);
-            audioClip.start();
+            try (InputStream bufferedIn = new BufferedInputStream(audioSrc);
+                 AudioInputStream audioStream = AudioSystem.getAudioInputStream(bufferedIn)) {
+
+                AudioFormat format = audioStream.getFormat();
+                DataLine.Info info = new DataLine.Info(Clip.class, format);
+                audioClip = (Clip) AudioSystem.getLine(info);
+                audioClip.open(audioStream);
+                System.out.println("正在播放：" + musicName);
+                audioClip.start();
+            }
         } catch (Exception e) {
-            e.printStackTrace();
+            OutputManager.showErrorMsg("播放音乐时出错："+e.getMessage());
         }
     }
 }

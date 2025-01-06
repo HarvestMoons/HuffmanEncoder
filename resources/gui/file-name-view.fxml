@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<GridPane fx:controller="com.huffman.gui.controller.FileNameController"
+          xmlns:fx="http://javafx.com/fxml/1"
+          alignment="center"
+          hgap="10"
+          vgap="5"
+          stylesheets="@buttonStyle.css, @backgroundStyle.css,@labelStyle.css"
+          styleClass="address-background">
+    <Label fx:id="infoText" styleClass="custom-label" GridPane.rowIndex="0" GridPane.columnIndex="0"  wrapText="true" maxWidth="200"/>
+    <TextField fx:id="addressTextField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+    <Button text="确认"  fx:id="confirmButton" styleClass="gradient-button" onAction="#handleConfirm" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+    <Button text="取消"  fx:id="cancelButton" styleClass="gradient-button" onAction="#handleCancel" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+</GridPane>
